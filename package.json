@@ -1,0 +1,25 @@
+{
+  "name": "gh-action-data-scraping",
+  "version": "1.0.0",
+  "description": "This shows how to use github actions to do automated data scraping",
+  "main": "index.js",
+  "scripts": {
+    "update-roi": "node ./json-data-roi.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xl400v/scrape-json.git"
+  },
+  "keywords": [
+    "actions"
+  ],
+  "author": "xl400v",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xl400v/scrape-json/issues"
+  },
+  "homepage": "https://github.com/xl400v/scrape-json",
+  "dependencies": {
+    "unirest": "^0.6"
+  }
+}
