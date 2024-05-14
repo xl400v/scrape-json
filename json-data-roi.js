@@ -6,7 +6,7 @@ const unirest = require('unirest');
 const idsROI = '116733';
 
 // for you to change easily
-const dataFolder = '/data';
+const dataFolder = '/data/roi';
 const now = new Date();
 const pathToData = path.join(__dirname, dataFolder, idsROI) + '.json';
 
