@@ -1,7 +1,6 @@
 name: Scrape json Data
 
 on:
-  push:
   schedule:
     - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
   
