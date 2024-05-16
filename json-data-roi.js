@@ -1,19 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const unirest = require('unirest');
-const idsROI = [
-  '116733'
-];
+const
+  envTimezone = process.env.TIMEZONE || 'Etc/UTC',
+  envPathSave = process.env.PATHWAY_SAVE || '/data';
+const
+  fs = require('fs'),
+  path = require('path'),
+  unirest = require('unirest');
+const
+  idsROI = [
+    '116733'
+  ];
 
 idsROI.forEach(async (id) => {
   const dateNow = new Date();
   // for you to change easily
   const petitionUrl = `https://www.roi.ru/api/petition/${id}.json`;
-  const tzName = 'Europe/Moscow';
-  const dataFolder = '/data/roi';
-  const pathToData = path.join(__dirname, dataFolder, id) + '.json';
+  const pathToData = path.join(__dirname, envPathSave, id) + '.json';
   
   // read data, if needed
   let data = [];
@@ -32,7 +35,7 @@ idsROI.forEach(async (id) => {
         });
       const jsonResponse = await response.body;
       const result = {
-        dateStamp: dateToString(dateNow, tzName),
+        dateStamp: dateToString(dateNow, envTimezone),
         consCount: jsonResponse.data?.vote.negative,
         prosCount: jsonResponse.data?.vote.affirmative,
         rapidsCount: jsonResponse.data?.vote.threshold,
