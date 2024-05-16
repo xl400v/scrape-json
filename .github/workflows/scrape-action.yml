@@ -1,27 +1,31 @@
 name: Scrape json Data
 
 on:
+  push:
+    paths-ignore:
+    - '**'
   schedule:
     - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
   
-permissions:
-  contents: write # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+env:
+  BRANCH_NAME: 'master'
+  TIMEZONE: 'Europe/Moscow' # Optional
   
 jobs:
-  build:
+  deploy_and_scrape:
     name: Scrape
+    permissions:
+      contents: write # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - name: Build
       run: npm install
-    - name: Run scrape
+    - name: Run scrape script
       run: npm run update-roi
-      # env:
-      #   WHATEVER_TOKEN: ${{ secrets.YOU_WANT }}
+      env:
+        PATHWAY_SAVE: '/data/roi'
     - uses: corcc/publish@master
       env:
-        BRANCH_NAME: main
         TASK_NAME: 'Data query:'
-        TIMEZONE: 'Europe/Moscow' # Optional
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
