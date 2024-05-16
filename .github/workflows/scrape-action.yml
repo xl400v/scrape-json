@@ -2,8 +2,6 @@ name: Scrape json Data
 
 on:
   push:
-    tags-ignore:
-    - 'releases/v[1-9]+.[0-9]+.[0-9]+'
     paths-ignore:
     - '**'
   schedule:
@@ -19,7 +17,8 @@ jobs:
     permissions:
       contents: write # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     runs-on: ubuntu-latest
-    if: startsWith( github.ref, 'refs/heads/main')
+    timeout-minutes: 5
+    if: startsWith( github.ref, 'refs/heads/' ) && contains( github.ref, '/main' ) || contains( github.ref, '/master' )
     steps:
     - uses: actions/checkout@master
     - name: Build
