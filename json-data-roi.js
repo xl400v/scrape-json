@@ -9,8 +9,14 @@ const
   unirest = require('unirest');
 const
   idsROI = [
-    '119248',
-    '116733'
+    '119248', // be over 2025-05-18
+    '117846', // be over 2025-04-09
+    '117069', // be over 2025-03-20
+    '116733', // be over 2025-05-08
+    '116727', // be over 2025-03-11
+    '115569', // be over 2025-02-01
+    '110337', // be over 2024-12-16
+    '110164'  // be over 2024-12-18
   ];
 
 idsROI.forEach(async (id) => {
