@@ -4,7 +4,7 @@ on:
   push:
     paths-ignore:
     - '**'
-  schedule:
+  schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
     - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
@@ -18,7 +18,7 @@ jobs:
       contents: write # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: startsWith( github.ref, 'refs/heads/' ) && contains( github.ref, '/main' ) || contains( github.ref, '/master' )
+    if: contains( github.ref, 'refs/heads/main' ) || contains( github.ref, 'refs/heads/master' )
     steps:
     - uses: actions/checkout@master
     - name: Build
