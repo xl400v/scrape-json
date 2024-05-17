@@ -9,6 +9,7 @@ const
   unirest = require('unirest');
 const
   idsROI = [
+    '119248',
     '116733'
   ];
 
