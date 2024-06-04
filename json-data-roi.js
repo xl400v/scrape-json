@@ -36,7 +36,7 @@ idsROI.forEach((id) => {
   // scrape data, possibly using prior data
   async function getData(url) {
     if (fs.existsSync(pathToData)) {
-      dataLog = await JSON.parse(fs.readFileSync(pathToData));
+      dataLog = JSON.parse(fs.readFileSync(pathToData));
     }
 
     try {
@@ -52,7 +52,7 @@ idsROI.forEach((id) => {
        * status.id === 71 - In archive
        */
       if (typeof jsonResponse !== 'undefined' && jsonResponse?.status.id === 31) {
-        result = {
+        result = await {
           dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
           consCount: jsonResponse?.vote.negative,
           prosCount: jsonResponse?.vote.affirmative,
@@ -69,7 +69,7 @@ idsROI.forEach((id) => {
       throw error;
       
     } finally {
-      await dataLog.push(result);
+      dataLog.push(result);
 
     }
   }
@@ -77,11 +77,13 @@ idsROI.forEach((id) => {
   // execute and persist data
   getData(petitionUrl) // no top level await... yet
     .then(() => {
-      // persist data
-      fs.writeFileSync(
-        path.resolve(pathToData),
-        JSON.stringify(dataLog, null, 2)
-      );
+      if (typeof result !== 'null') {
+        // persist data
+        fs.writeFileSync(
+          path.resolve(pathToData),
+          JSON.stringify(dataLog, null, 2)
+        );
+      }
     });
 });
 
