@@ -31,7 +31,7 @@ idsROI.forEach((id) => {
     petitionUrl = `https://www.roi.ru/api/petition/${id}.json`,
     pathToData = path.join(__dirname, (envPathSave ?? '/data'), id) + '.json';
   // read data, if needed
-  let result, dataLog = [];
+  let result = null, dataLog = [];
   
   // scrape data, possibly using prior data
   async function getData(url) {
@@ -53,11 +53,11 @@ idsROI.forEach((id) => {
        */
       if (typeof jsonResponse !== 'undefined' && jsonResponse?.status.id === 31) {
         result = await {
+          //unixtimePoll: jsonResponse?.date.poll,
           dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
           consCount: jsonResponse?.vote.negative,
           prosCount: jsonResponse?.vote.affirmative,
-          rapidsCount: jsonResponse?.vote.threshold,
-          unixtimePoll: jsonResponse?.pool
+          rapidsCount: jsonResponse?.vote.threshold
         };
         console.log(`${url} ✅ Response done`);
       } else {
@@ -77,7 +77,7 @@ idsROI.forEach((id) => {
   // execute and persist data
   getData(petitionUrl) // no top level await... yet
     .then(() => {
-      if (typeof result !== 'null') {
+      if (result !== null) {
         // persist data
         fs.writeFileSync(
           path.resolve(pathToData),
