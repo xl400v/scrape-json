@@ -2369,7 +2369,6 @@
     "prosCount": 51,
     "rapidsCount": 100000
   },
-  null,
   {
     "dateStamp": "2024-06-05 04:32",
     "consCount": 9,
@@ -2388,21 +2387,18 @@
     "prosCount": 51,
     "rapidsCount": 100000
   },
-  null,
   {
     "dateStamp": "2024-06-05 08:23",
     "consCount": 9,
     "prosCount": 51,
     "rapidsCount": 100000
   },
-  null,
   {
     "dateStamp": "2024-06-05 10:20",
     "consCount": 9,
     "prosCount": 51,
     "rapidsCount": 100000
   },
-  null,
   {
     "dateStamp": "2024-06-05 12:25",
     "consCount": 9,
@@ -2414,6 +2410,5 @@
     "consCount": 9,
     "prosCount": 51,
     "rapidsCount": 100000
-  },
-  null
+  }
 ]
