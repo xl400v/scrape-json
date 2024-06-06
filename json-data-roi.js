@@ -27,11 +27,11 @@ const
   ];
 
 idsROI.forEach((id) => {
-  const dateNow = new Date();
   // for you to change easily
   const
+    dateNow = new Date(),
     petitionUrl = `https://www.roi.ru/api/petition/${id}.json`,
-    pathToData = path.join(__dirname, (envPathSave ?? '/data'), id) + '.json';
+    pathToData = path.join(__dirname, (envPathSave ?? '/data/roi'), id) + '.json';
   // read data, if needed
   let result = null, dataLog = [];
   
@@ -49,11 +49,8 @@ idsROI.forEach((id) => {
           'Content-Type': 'application/json'
         });
       const jsonResponse = await response.body?.data;
-      /**
-       * status.id === 31 - On vote
-       * status.id === 71 - In archive
-       */
-      if (typeof jsonResponse !== 'undefined' && jsonResponse?.status.id === 31) {
+      
+      if (jsonResponse?.status.id === 31) { // id == 31 - on vote
         result = await {
           //unixtimePoll: jsonResponse?.date.poll,
           dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
@@ -62,6 +59,8 @@ idsROI.forEach((id) => {
           rapidsCount: jsonResponse?.vote.threshold
         };
         console.log(`${url} ✅ Response done`);
+      } else if (jsonResponse?.status.id === 71) { // id == 71 - in archive
+        console.log(`${url} ❎ Response done, but vote closed`);
       } else {
         console.log(`${url} 🚧 Response undefined`);
       }
