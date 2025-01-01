@@ -28810,5 +28810,11 @@
     "consCount": 4096,
     "prosCount": 29301,
     "rapidsCount": 100000
+  },
+  {
+    "dateStamp": "2025-01-01 16:10",
+    "consCount": 4096,
+    "prosCount": 29304,
+    "rapidsCount": 100000
   }
 ]
