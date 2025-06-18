@@ -12,28 +12,33 @@ const
   unirest = require('unirest');
 const
   idsROI = [
+    '135050', // be over 2026-06-17
+    '134010', // be over 2026-05-22
+    '133825', // be over 2026-05-17
+    '133660', // be over 2026-05-14
     '132980', // be over 2026-04-30
     '131210', // be over 2026-04-17
-    '128078', // be over 2026-01-23
     '128085', // be over 2026-05-21
+    '128078', // be over 2026-01-23
     '126913', // be over 2025-12-21
     '126073', // be over 2026-02-05
-    '121941', // be over 2025-06-01
+    '122513', // be over 2025-08-04
+    '121941', // be over 2025-05-25
     '121038', // be over 2025-06-26
-    '120465', // be over 2025-06-14
-    '120159', // be over 2025-06-07
-    '119876', // be over 2025-05-29
+    //'120465', // be over 2025-06-14
+    //'120159', // be over 2025-06-07
+    //'119876', // be over 2025-05-29
     //'119248', // be over 2025-05-18
     //'117846', // be over 2025-04-09
-    '117707', // be over 2025-06-05
+    //'117707', // be over 2025-06-05
     //'117069', // be over 2025-03-20
     //'116733', // be over 2025-05-08
     //'116727', // be over 2025-03-11
     //'115569', // be over 2025-02-01
-    '113196', // be over 2025-06-01
+    //'113196', // be over 2025-06-01
     //'110337', // be over 2024-12-16
     //'110164', // be over 2024-12-18
-    //'80612',   // be over 2022-02-28
+    //'80612',  // be over 2022-02-28
   ];
 
 idsROI.forEach((id) => {
@@ -58,9 +63,11 @@ idsROI.forEach((id) => {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         });
+      // Ref https://www.roi.ru/api/attributes/status.json
       const jsonResponse = await response.body?.data;
-      
-      if (jsonResponse?.status.id === 31) { // id == 31 - on vote
+
+      // id == 31 - on vote
+      if (jsonResponse?.status.id === 31) {
         result = await {
           //unixtimePoll: jsonResponse?.date.poll,
           dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
@@ -68,11 +75,22 @@ idsROI.forEach((id) => {
           prosCount: jsonResponse?.vote.affirmative,
           rapidsCount: jsonResponse?.vote.threshold
         };
-        console.log(`${url} ✅ Response done`);
-      } else if (jsonResponse?.status.id === 71) { // id == 71 - in archive
-        console.log(`${url} ❎ Response done, but vote closed`);
+        console.log(`${url} 🆗 Response OK`);
+        // Ref https://www.roi.ru/api/petitions/poll.json
+
+      // id == 51 - in review
+      } else if (jsonResponse?.status.id === 51) {
+        console.log(`${url} 🔜 Response OK, and vote under consideration`);
+        // Ref https://www.roi.ru/api/petitions/advisement.json
+
+      // id == 71 - in archive
+      } else if (jsonResponse?.status.id === 71) {
+        console.log(`${url} 🔚 Response OK, but vote closed`);
+        // Ref https://www.roi.ru/api/petitions/archive.json
+
       } else {
-        console.log(`${url} 🚧 Response undefined`);
+        console.log(`${url} 🆖 Response NO Good`);
+        // Ref https://www.roi.ru/api/petitions/complete.json
       }
       
     } catch (error) {
