@@ -18,12 +18,12 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: contains( github.event.ref, 'main' ) || contains( github.event.ref, 'master' )
+    if: contains( github.ref, 'refs/heads/main' ) || contains( github.ref, 'refs/heads/master' )
 
     steps:
       - uses: actions/checkout@main
 
-      - name: Build on ${{ github.ref_name }}
+      - name: Build on ${{ github.event.ref }}
         run: npm install
 
       - name: Run scrape script
