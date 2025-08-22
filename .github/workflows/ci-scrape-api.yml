@@ -3,9 +3,9 @@ name: Scrape json Data
 on:
   push:
     paths-ignore:
-    - '**'
+      - '**'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '*/40 * * * *' # Ref https://crontab.guru/examples.html
+    - cron: '*/45 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
   BRANCH_NAME: 'main'
@@ -18,16 +18,21 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: contains( github.ref, 'refs/heads/main' ) || contains( github.ref, 'refs/heads/master' )
+    if: contains( github.event.ref, 'main' ) || contains( github.event.ref, 'master' )
+
     steps:
-    - uses: actions/checkout@main
-    - name: Build on ${{ github.ref_name }}
-      run: npm install
-    - name: Run scrape script
-      run: npm run update-roi
-      env:
-        PATHWAY_SAVE: /data/roi
-    - uses: corcc/publish@master
-      env:
-        TASK_NAME: 'Data query:'
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
+      - uses: actions/checkout@main
+
+      - name: Build on ${{ github.ref_name }}
+        run: npm install
+
+      - name: Run scrape script
+        run: npm run update-roi
+        env:
+          PATHWAY_SAVE: /data/roi
+
+      - uses: corcc/publish@master
+        env:
+          TASK_NAME: 'Data query:'
+          TZ: 'Europe/Moscow' # Timezone (optional)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you
