@@ -8,7 +8,7 @@ on:
     - cron: '*/45 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
-  BRANCH_NAME: 'main'
+  BRANCH_NAME: 'master'
   TIMEZONE: 'Europe/Moscow' # Optional
   
 jobs:
