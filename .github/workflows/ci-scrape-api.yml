@@ -1,11 +1,11 @@
 name: Scrape json Data
 
 on:
-  push:
+  #push:
   #  paths-ignore:
   #    - '**'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '*/45 * * * *' # Ref https://crontab.guru/examples.html
+    - cron: '30 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
   BRANCH_NAME: 'master'
