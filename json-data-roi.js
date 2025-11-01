@@ -12,6 +12,7 @@ const
   unirest = require('unirest');
 const
   idsROI = [
+    '142122', // be over 2026-11-01
     '141451', // be over 2026-10-22
     '141112', // be over 2026-10-11
     '137308', // be over 2026-09-26
