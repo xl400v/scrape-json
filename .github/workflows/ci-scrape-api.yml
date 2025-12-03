@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '*/45 * * * *' # Ref https://crontab.guru/examples.html
+    - cron: '*/55 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
   BRANCH_NAME: 'master'
@@ -15,7 +15,7 @@ jobs:
   changed_files:
     name: Check modified files
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     outputs: # Map a step output to a job output
       all: ${{ steps.changes.outputs.all }}
       js: ${{ steps.changes.outputs.js }}
