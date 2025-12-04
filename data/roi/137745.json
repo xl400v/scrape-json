@@ -100,5 +100,11 @@
     "consCount": 2,
     "prosCount": 188,
     "rapidsCount": 100000
+  },
+  {
+    "dateStamp": "2025-12-04 11:00",
+    "consCount": 8,
+    "prosCount": 242,
+    "rapidsCount": 100000
   }
 ]
