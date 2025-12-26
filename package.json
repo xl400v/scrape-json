@@ -1,6 +1,6 @@
 {
   "name": "scrape-json",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "How to use github actions to do automated data scraping",
   "main": "json-data-roi.js",
   "scripts": {
@@ -27,6 +27,6 @@
     "unirest": "^0.6"
   },
   "engines": {
-    "node": "^20.19 || ^22.11"
+    "node": "^20.19 || ^22.21"
   }
 }

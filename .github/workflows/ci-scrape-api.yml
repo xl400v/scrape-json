@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '*/55 * * * *' # Ref https://crontab.guru/examples.html
+    - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
   
 env:
   BRANCH_NAME: 'master'
@@ -24,7 +24,7 @@ jobs:
     #  - name: curl actuator
     #    id: ping
     #    run: |
-    #      echo "::set-output name=status::$(curl https://www.roi.ru/api/attributes/status.json)"
+    #      echo "status=$(curl https://www.roi.ru/api/attributes/status.json)" >> $GITHUB_OUTPUT
       
     #  - name: health check
     #    run: |
@@ -42,8 +42,8 @@ jobs:
       - name: Get changed files
         id: changes # Set outputs using the command
         run: |
-          echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
-          echo "::set-output name=js::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .json$ | xargs)"
+          echo "all=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+          echo "js=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .json$ | xargs)" >> $GITHUB_OUTPUT
   
   deploy_and_scrape:
     name: Scrape query
