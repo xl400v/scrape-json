@@ -1,6 +1,6 @@
 {
   "name": "scrape-json",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "How to use github actions to do automated data scraping",
   "main": "json-data-roi.js",
   "scripts": {

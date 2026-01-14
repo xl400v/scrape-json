@@ -4,7 +4,7 @@
     ``` nix
     git archive -v --format=tar.gz --output=./121941.tar.gz data:roi ./121941.json
     # or
-    git clone -b data ssh://git@github.com:443/xl400v/scrape-json.git .
+    git clone -b data ssh://git@github.com:443/<your_username>/scrape-json.git .
     # or
     git archive -v --format=tar.gz --output=./121941.tar.gz master:data roi/121941.json
     ```
@@ -14,7 +14,7 @@
 
 * Download the master branch from the remote repository
     ``` nix
-    git clone --single-branch -c core.autocrlf=input ssh://git@github.com:443/xl400v/scrape-json.git .
+    git clone --single-branch -c core.autocrlf=input ssh://git@github.com:443/<your_username>/scrape-json.git .
     ```
 * Check line breaks for text files in the remove repository
     ``` nix
@@ -22,5 +22,6 @@
     ```
 * Set `user.email` to sing commits
     ``` nix
-    git config --local user.email 49412889+xl400v@users.noreply.github.com
+    git config --local user.name "<your_username>"
+    git config --local user.email <your_id>+<your_username>@users.noreply.github.com
     ```

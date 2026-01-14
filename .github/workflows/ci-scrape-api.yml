@@ -2,22 +2,19 @@ name: Scrape json Data
 
 on:
   push:
+    branches:
+      - master
     paths-ignore:
-      - '**'
+      - '**.json'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
-  
-env:
-  BRANCH_NAME: 'master'
-  TIMEZONE: 'Europe/Moscow' # Optional
+    - cron: '20 * * * *' # Ref https://crontab.guru/examples.html
   
 jobs:
   changed_files:
     name: Check modified files
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     outputs: # Map a step output to a job output
-      all: ${{ steps.changes.outputs.all }}
       js: ${{ steps.changes.outputs.js }}
     
     steps: # Make sure we have some code to diff
@@ -35,15 +32,20 @@ jobs:
     #      echo "It's OK"
       
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 2
+          ref: ${{ github.head_ref }}
+          sparse-checkout: |
+            data
+    #      token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
+    #      fetch-depth: 0
+    #      ref: my-branch
       
-      - name: Get changed files
+      - name: Get changed json files
         id: changes # Set outputs using the command
         run: |
-          echo "all=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
-          echo "js=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .json$ | xargs)" >> $GITHUB_OUTPUT
+          echo "js=$(git diff --name-only --diff-filter=ACMRT ${{ github.head_ref }} ${{ github.sha }} | grep [[:digit:]]\.json$ | xargs)" >> $GITHUB_OUTPUT
   
   deploy_and_scrape:
     name: Scrape query
@@ -55,7 +57,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@main
+        id: checkout
+        uses: actions/checkout@v6
+      
+      - name: Git config
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          echo "Commit: ${{ steps.checkout.outputs.commit }}"
+          echo "Ref: ${{ steps.checkout.outputs.ref }}"
+          echo "Event.sha: ${{ github.event.pull_request.base.sha }}"
+          echo "Sha: ${{ github.sha }}"
 
       - name: Build on ${{ github.ref_name }}
         run: npm install
@@ -64,6 +76,7 @@ jobs:
         run: npm run update-roi
         env:
           PATHWAY_SAVE: /data/roi
+          TIMEZONE: 'Europe/Moscow' # Optional
 
       - uses: corcc/publish@master
         env:
