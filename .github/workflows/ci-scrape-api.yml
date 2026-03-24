@@ -45,6 +45,13 @@ jobs:
       - name: Get changed json files
         id: changes # Set outputs using the command
         run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
           echo "js=$(git diff --name-only --diff-filter=ACMRT ${{ github.head_ref }} ${{ github.sha }} | grep [[:digit:]]\.json$ | xargs)" >> $GITHUB_OUTPUT
   
   deploy_and_scrape:
@@ -64,6 +71,7 @@ jobs:
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+          
           echo "Commit: ${{ steps.checkout.outputs.commit }}"
           echo "Ref: ${{ steps.checkout.outputs.ref }}"
           echo "Event.sha: ${{ github.event.pull_request.base.sha }}"
