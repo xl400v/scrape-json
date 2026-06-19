@@ -21868,5 +21868,11 @@
     "consCount": 254,
     "prosCount": 1312,
     "rapidsCount": 100000
+  },
+  {
+    "dateStamp": "2026-06-20 00:13",
+    "consCount": 256,
+    "prosCount": 1315,
+    "rapidsCount": 100000
   }
 ]
