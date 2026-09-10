@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - '**.json'
   schedule: # Ref https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '0 * * * *' # Ref https://crontab.guru/examples.html
+    - cron: '0 */2 * * *' # Ref https://crontab.guru/examples.html
 
 env:
   PATHWAY_SAVE: roi/
@@ -14,85 +14,73 @@ env:
 
 jobs:
   changed_files:
-    name: Check modified files
+    name: Check if scrape is needed
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs: # Map a step output to a job output
-      js: ${{ steps.changes.outputs.js }}
-    
-    steps: # Make sure we have some code to diff
-    #  - name: curl actuator
-    #    id: ping
-    #    run: |
-    #      echo "status=$(curl https://www.roi.ru/api/attributes/status.json)" >> $GITHUB_OUTPUT
-      
-    #  - name: health check
-    #    run: |
-    #      if [[ ${{ steps.ping.outputs.status }} != *"UP"* ]]; then
-    #        echo "health check is failed"
-    #        exit 1
-    #      fi
-    #      echo "It's OK"
+    outputs:
+      should_scrape: ${{ steps.decide.outputs.should_scrape }}
+    steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
-    #      token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
           ref: ${{ github.ref }}
-      
-      - name: Get changed json files
-        id: changes # Set outputs using the command
-        env:
-          BEFORE_SHA: ${{ startsWith(github.event.ref, 'refs/heads/ma') && '' || github.event.before }}
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          DATA_BRANCH="data"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
 
-          if git show-ref --verify --quiet refs/heads/$DATA_BRANCH; then
-            echo "Branch '$DATA_BRANCH' exists locally. Checking out..."
-            git checkout $DATA_BRANCH
+      - name: Decide if scrape is needed
+        id: decide
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "Triggered by schedule. Scraping..."
+            echo "should_scrape=true" >> $GITHUB_OUTPUT
           else
-            echo "Branch '$DATA_BRANCH' does not exist. Last SHA ${{ github.actor }}"
-            git checkout --orphan $DATA_BRANCH
-            echo "js=true"
-            exit 0
+            BEFORE_SHA="${{ github.event.before }}"
+            CURRENT_SHA="${{ github.sha }}"
+            
+            if [ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]; then
+              echo "First commit. Scraping..."
+              echo "should_scrape=true" >> $GITHUB_OUTPUT
+            else
+               CHANGED_NON_JSON=$(git diff --name-only ${BEFORE_SHA} ${CURRENT_SHA} | grep -v '\.json$' | xargs)
+              if [ -n "$CHANGED_NON_JSON" ]; then
+                echo "Non-JSON files changed: $CHANGED_NON_JSON"
+                echo "should_scrape=true" >> $GITHUB_OUTPUT
+              else
+                echo "Only JSON or no files changed. Skipping scrape."
+                echo "should_scrape=false" >> $GITHUB_OUTPUT
+              fi
+            fi
           fi
 
-          echo "js=$(git diff --name-only --diff-filter=ACMRT ${BEFORE_SHA} ${GITHUB_SHA} | grep [[:digit:]]\.json$ | xargs)" >> $GITHUB_OUTPUT
-  
   deploy_and_scrape:
     name: Scrape and Push to 'data' branch
-    permissions: # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
-      contents: write
     runs-on: ubuntu-latest
     needs: changed_files
-    if: ${{ needs.changed_files.outputs.js != '' && startsWith(github.head_ref, 'refs/heads/ma') }}
-
+    if: needs.changed_files.outputs.should_scrape == 'true'
+    permissions: # Ref https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+      contents: write
     steps:
-      - name: Checkout full repo (source branch)
-        uses: actions/checkout@v6
+      - name: Checkout 'master' branch (for scripts)
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-          ref: ${{ github.ref }}
+          fetch-depth: 0
+          ref: master
 
       - name: Switch to 'data' branch & sync
         run: |
           DATA_BRANCH="data"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-
-          if git show-ref --verify --quiet refs/heads/$DATA_BRANCH; then
-            echo "Branch '$DATA_BRANCH' exists locally. Checking out..."
-            git checkout $DATA_BRANCH
-            git pull origin $DATA_BRANCH --no-rebase || echo "Warning: Could not pull from origin (maybe first run or conflict)."
+          
+          # Check if 'data' branch exists
+          if git show-ref --verify --quiet refs/remotes/origin/$DATA_BRANCH; then
+            echo "Branch '$DATA_BRANCH' exists. Checking out..."
+            git checkout -b $DATA_BRANCH origin/$DATA_BRANCH
+            git pull origin $DATA_BRANCH --no-rebase
           else
             echo "Branch '$DATA_BRANCH' does not exist. Creating orphan branch..."
             git checkout --orphan $DATA_BRANCH
-            
-            git add .
-            git commit -m "Initial commit for data branch [skip ci]: ${{ github.sha }}" || echo "No files to commit yet."
+            # Clear the 'staging area', since 'orphan branch' inherits files from 'master'
+            git rm -rf .
           fi
 
       - name: Install dependencies
@@ -106,14 +94,15 @@ jobs:
 
       - name: Commit and Push changes to 'data'
         run: |
+          DATA_BRANCH="data"
           git add .
-
+          
+          # Checking for changes
           if git diff --staged --quiet; then
             echo "No changes in '${{ env.PATHWAY_SAVE }}' folder to commit. Skipping push."
             exit 0
           fi
-
+          
           git commit -m "Auto-update json files [skip ci]: ${{ github.sha }}"
           git push origin $DATA_BRANCH --force-with-lease || git push origin $DATA_BRANCH
-          
           echo "Successfully pushed updates to '$DATA_BRANCH' branch."

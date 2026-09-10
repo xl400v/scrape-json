@@ -35,7 +35,7 @@ if ($existingFiles) {
 }
 
 # --- User Input ---
-$inputId = Read-Host "Enter the public initiative index (e.g., 126073)"
+$inputId = Read-Host "Enter the public initiative index (e.g., 80612)"
 if ([string]::IsNullOrWhiteSpace($inputId)) { exit }
 
 # 2. Prepare the final URL using string replacement
@@ -77,7 +77,7 @@ try {
         # --- CSV Generation with Dynamic Separator ---
         $systemSeparator = [System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ListSeparator
         
-        # Add Timestamp to filename: ROI_126073_20231027_1430.csv
+        # Add Timestamp to filename: ROI_80612_20220803_0600.csv
         $timestamp = Get-Date -Format "yyyyMMdd_HHmm"
         $newFileName = "ROI_$($inputId)_$($timestamp).csv"
         
