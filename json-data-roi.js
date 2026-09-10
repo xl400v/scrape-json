@@ -65,11 +65,11 @@ const
     '137745', // be over 2026-12-04
     '137308', // be over 2026-09-26
     '137302', // be over 2026-09-26
-    '136408', // be over 2026-09-09
-    '135500', // be over 2026-06-17
-    '135413', // be over 2026-08-26
+    //'136408', // be over 2026-09-09
+    //'135500', // be over 2026-06-17
+    //'135413', // be over 2026-08-26
     //'135050', // be over 2026-06-17
-    '134335', // be over 2026-07-31
+    //'134335', // be over 2026-07-31
     //'134010', // be over 2026-05-22
     //'133825', // be over 2026-05-17
     //'133660', // be over 2026-05-14
@@ -98,41 +98,43 @@ const
     //'80612',  // be over 2022-02-28
   ];
 
-idsROI.forEach((id) => {
-  // for you to change easily
-  const
-    dateNow = new Date(),
-    petitionUrl = `https://www.roi.ru/api/petition/${id}.json`,
-    pathToData = path.join(__dirname, (envPathSave ?? 'data/roi/'), id) + '.json';
-  // read data, if needed
-  let result = null, dataLog = [];
-  
-  // scrape data, possibly using prior data
-  async function getData(url) {
-    if (fs.existsSync(pathToData)) {
-      dataLog = JSON.parse(fs.readFileSync(pathToData));
-    }
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    try {
-      const response = await unirest
-        .get(url)
-        .headers({
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        });
-      // Ref https://www.roi.ru/api/attributes/status.json
-      const jsonResponse = await response.body?.data;
+async function runScraper() {
+  for (const id of idsROI) {
+    // for you to change easily
+    const
+      dateNow = new Date(),
+      petitionUrl = `https://www.roi.ru/api/petition/${id}.json`,
+      pathToData = path.join(__dirname, (envPathSave ?? 'data/roi/'), id) + '.json';
+    
+    // read data, if needed
+    let result = null, dataLog = [];
+    
+    // scrape data, possibly using prior data
+    async function getData(url) {
+      if (fs.existsSync(pathToData)) {
+        dataLog = JSON.parse(fs.readFileSync(pathToData));
+      }
 
-      // id == 31 - on vote
-      if (jsonResponse?.status.id === 31) {
-        result = await {
-          //unixtimePoll: jsonResponse?.date.poll,
-          dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
-          consCount: jsonResponse?.vote.negative,
-          prosCount: jsonResponse?.vote.affirmative,
-          rapidsCount: jsonResponse?.vote.threshold
-        };
-        console.log(`${url} 🆗 Response OK`);
+      try {
+        const response = await unirest
+          .get(url)
+          .headers({
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          });
+        // Ref https://www.roi.ru/api/attributes/status.json
+        const jsonResponse = await response.body?.data;
+
+        if (jsonResponse?.status.id === 31) {
+          result = {
+            dateStamp: dateToString(dateNow, (envTimezone ?? 'Etc/UTC')),
+            consCount: jsonResponse?.vote.negative,
+            prosCount: jsonResponse?.vote.affirmative,
+            rapidsCount: jsonResponse?.vote.threshold
+          };
+          console.log(`${url} 🆗 Response OK`);
         // Ref https://www.roi.ru/api/petitions/poll.json
 
       // id == 51 - in review
@@ -149,29 +151,33 @@ idsROI.forEach((id) => {
         console.log(`${url} 🆖 Response NO Good`);
         // Ref https://www.roi.ru/api/petitions/complete.json
       }
-      
-    } catch (error) {
-      error.message = `${error.message}`;
-      throw error;
-      
-    } finally {
-      dataLog.push(result);
-
+        
+      } catch (error) {
+        console.error(`Error fetching ${url}: ${error.message}`);
+        throw error;
+      } finally {
+        dataLog.push(result);
+      }
     }
-  }
-  
-  // execute and persist data
-  getData(petitionUrl) // no top level await... yet
-    .then(() => {
+    
+    try {
+      await getData(petitionUrl);
       if (result !== null) {
-        // persist data
         fs.writeFileSync(
           path.resolve(pathToData),
           JSON.stringify(dataLog, null, 2)
         );
       }
-    });
-});
+    } catch (err) {
+      console.error(`Failed to process ID ${id}:`, err.message);
+    }
+
+    if (id !== idsROI[idsROI.length - 1]) {
+      console.log(`Waiting 5 seconds before next request...`);
+      await sleep(5000);
+    }
+  }
+}
 
 /**
  *
@@ -192,3 +198,5 @@ function dateToString(ts, tz) {
   const local = `${year}-${month}-${day} ${hour}:${minut}`;
   return local;
 }
+
+runScraper().then(() => console.log("All tasks completed.")).catch(console.error);
